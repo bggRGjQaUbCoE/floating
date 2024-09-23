@@ -30,7 +30,7 @@ class PiPSwitcher extends StatefulWidget {
 
 class _PipAwareState extends State<PiPSwitcher> {
   late final Floating _floating = widget.floating ?? Floating();
-  final _floatingListener = const MethodChannel("onUserLeaveHint");
+  final _floatingListener = const MethodChannel("floating");
 
   @override
   void initState() {
