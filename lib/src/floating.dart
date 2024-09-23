@@ -75,18 +75,14 @@ class Floating {
   //
   // This stream will call listeners only when the value changed.
   Stream<PiPStatus> get pipStatusStream {
-    _timer ??= Timer.periodic(
-      _probeInterval,
-      (_) async {
-        final currentStatus = await pipStatus;
-        if (_controller.isClosed) {
-          return;
-        }
-        _controller.add(currentStatus);
-      },
-    );
     _stream ??= _controller.stream.asBroadcastStream();
     return _stream!.distinct();
+  }
+
+  void onPipChanged(bool isInPipMode) {
+    if (!_controller.isClosed) {
+      _controller.add(isInPipMode ? PiPStatus.enabled : PiPStatus.disabled);
+    }
   }
 
   /// Turns on PiP mode.
