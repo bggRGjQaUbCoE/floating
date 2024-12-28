@@ -12,15 +12,15 @@ class PiPSwitcher extends StatefulWidget {
   final Floating? floating;
 
   /// Child to render when PiP is enabled
-  final Widget childWhenEnabled;
+  final Function getChildWhenEnabled;
 
   /// Child to render when PiP is disabled or unavailable.
-  final Widget childWhenDisabled;
+  final Function getChildWhenDisabled;
 
   PiPSwitcher({
     Key? key,
-    required this.childWhenEnabled,
-    required this.childWhenDisabled,
+    required this.getChildWhenEnabled,
+    required this.getChildWhenDisabled,
     this.floating,
   }) : super(key: key);
 
@@ -37,32 +37,35 @@ class _PipAwareState extends State<PiPSwitcher> {
     super.initState();
     _floatingListener.setMethodCallHandler((call) async {
       if (call.method == 'onPipChanged') {
-        bool isInPipMode = call.arguments;
-        _floating.onPipChanged(isInPipMode);
+        _floating.isPipMode = call.arguments;
+        // _floating.onPipChanged(isInPipMode);
       }
     });
   }
 
-  @override
-  void dispose() {
-    /// Dispose the floating instance only if it was created
-    /// by this widget.
-    ///
-    /// Floating instance can be also provided by the user of this
-    /// widget. If so, it's the user's responsibility to dispose
-    /// it when necessary.
-    if (widget.floating == null) {
-      _floating.dispose();
-    }
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  /// Dispose the floating instance only if it was created
+  /// by this widget.
+  ///
+  /// Floating instance can be also provided by the user of this
+  /// widget. If so, it's the user's responsibility to dispose
+  /// it when necessary.
+  //   if (widget.floating == null) {
+  //     _floating.dispose();
+  //   }
+  //   super.dispose();
+  // }
 
   @override
-  Widget build(BuildContext context) => StreamBuilder(
-        stream: _floating.pipStatusStream,
-        initialData: PiPStatus.disabled,
-        builder: (context, snapshot) => snapshot.data == PiPStatus.enabled
-            ? widget.childWhenEnabled
-            : widget.childWhenDisabled,
-      );
+  Widget build(BuildContext context) => _floating.isPipMode
+      ? widget.getChildWhenEnabled()
+      : widget.getChildWhenDisabled();
+  // StreamBuilder(
+  //       stream: _floating.pipStatusStream,
+  //       initialData: PiPStatus.disabled,
+  //       builder: (context, snapshot) => snapshot.data == PiPStatus.enabled
+  //           ? widget.childWhenEnabled
+  //           : widget.childWhenDisabled,
+  //     );
 }

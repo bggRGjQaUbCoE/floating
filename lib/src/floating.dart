@@ -25,14 +25,12 @@ EnableArguments? lastEnableArguments;
 /// Support for other platforms is not planned.
 class Floating {
   final _channel = const MethodChannel('floating');
-  final _controller = StreamController<PiPStatus>();
-  final Duration _probeInterval;
-  Timer? _timer;
-  Stream<PiPStatus>? _stream;
+  // final _controller = StreamController<PiPStatus>();
+  // Stream<PiPStatus>? _stream;
 
-  Floating({
-    Duration probeInterval = const Duration(milliseconds: 10),
-  }) : _probeInterval = probeInterval;
+  bool? _isPipAvailable;
+
+  late bool isPipMode = false;
 
   /// Confirms or denies PiP availability.
   ///
@@ -40,8 +38,8 @@ class Floating {
   /// by admin or device manufacturer. Also, the device may
   /// have Android version that was released without this feature.
   Future<bool> get isPipAvailable async {
-    final bool? supportsPip = await _channel.invokeMethod('pipAvailable');
-    return supportsPip ?? false;
+    _isPipAvailable ??= await _channel.invokeMethod('pipAvailable');
+    return _isPipAvailable ?? false;
   }
 
   /// Checks current app PiP status.
@@ -74,16 +72,16 @@ class Floating {
   // The probing interval can be configured in the constructor.
   //
   // This stream will call listeners only when the value changed.
-  Stream<PiPStatus> get pipStatusStream {
-    _stream ??= _controller.stream.asBroadcastStream();
-    return _stream!.distinct();
-  }
+  // Stream<PiPStatus> get pipStatusStream {
+  //   _stream ??= _controller.stream.asBroadcastStream();
+  //   return _stream!.distinct();
+  // }
 
-  void onPipChanged(bool isInPipMode) {
-    if (!_controller.isClosed) {
-      _controller.add(isInPipMode ? PiPStatus.enabled : PiPStatus.disabled);
-    }
-  }
+  // void onPipChanged(bool isInPipMode) {
+  //   if (!_controller.isClosed) {
+  //     _controller.add(isInPipMode ? PiPStatus.enabled : PiPStatus.disabled);
+  //   }
+  // }
 
   /// Turns on PiP mode.
   ///
@@ -129,16 +127,16 @@ class Floating {
         'autoEnable': autoEnable,
       },
     );
-    return enabledSuccessfully ?? false
-        ? PiPStatus.enabled
-        : PiPStatus.unavailable;
+
+    isPipMode = enabledSuccessfully ?? false;
+
+    return isPipMode ? PiPStatus.enabled : PiPStatus.unavailable;
   }
 
   // Disposes internal components used to update the [isInPipMode$] stream.
-  void dispose() {
-    _timer?.cancel();
-    _controller.close();
-  }
+  // void dispose() {
+  //   _controller.close();
+  // }
 }
 
 /// Represents rational in [numerator]/[denominator] notation.
